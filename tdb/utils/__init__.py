@@ -1,2 +1,2 @@
-from .encryption import *
-from .compression import *
+from .encryption import encrypt, decrypt
+from .compression import TFile
