@@ -1,2 +1,2 @@
-from .base import Base
-from .user import User
+from .base import BaseHandler
+from .user import UserHandler

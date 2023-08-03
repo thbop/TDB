@@ -2,7 +2,7 @@ from ..utils.encryption import encrypt, decrypt
 import json
 from copy import copy
 
-class Base:
+class BaseObj:
     def __init__(self):
         self.private = {}
         self._encrypted = True
@@ -23,7 +23,5 @@ class Base:
             self.private = encrypt(key, json.dumps(self.private))
             self._encrypted = True
     
-    
-
     def copy(self):
         return copy(self)
