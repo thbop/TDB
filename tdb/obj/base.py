@@ -12,6 +12,12 @@ class BaseObj:
     def load(self, i):
         self.private = i['private']
         self.public = i['public']
+    
+    def save(self):
+        return {
+            'private': self.private,
+            'public': self.public
+        }
 
     def get_private(self, key, data):
         if not self._encrypted:
