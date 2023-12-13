@@ -6,6 +6,7 @@ class BaseHandler:
         self.base_obj = base_obj
 
         self.load()
+
     
     def load(self):
         try:
@@ -32,6 +33,7 @@ class BaseHandler:
                 self.db.data[self.key][k] = o.save()
 
         elif isinstance(self.objects, list):
+            self.db.data[self.key] = []
             for o in self.objects:
                 self.db.data[self.key].append(o.save())
     
@@ -45,4 +47,6 @@ class BaseHandler:
             self.objects.append(obj)
         else:
             raise TypeError(f'{self.key} is a list. Use set() for dictionaries.')
+        
+    # def remove(self, )
     

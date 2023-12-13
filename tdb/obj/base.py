@@ -22,12 +22,16 @@ class BaseObj:
     def get_private(self, key):
         if self._encrypted:
             raw_data = decrypt(key, self.private)
-            if raw_data != '':
+            try:
                 self.private = json.loads(raw_data)
+
                 self._encrypted = False
                 return True
-            else:
+            
+            except json.decoder.JSONDecodeError:
                 return False
+            
+
 
     def set_private(self, key):
         if not self._encrypted:

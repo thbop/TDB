@@ -1,6 +1,5 @@
 import aes
-import warnings
-warnings.filterwarnings("error")
+
 
 
 chars = '`~1!2@3#4$5%6^7&8*9(0)-_=+qQwWeErRtTyYuUiIoOpP[{}]\\|aAsSdDfFgGhHjJkKlL;:\'"zZxXcCvVbBnNmM,<.>/? ' # Prevent invalid characters
@@ -15,9 +14,7 @@ def tothex(text: str):
     return {'hex':aes.utils.arr8bit2int(intarr), 'len':len(text)}
 
 def fromthex(data):
-    try:
-        intarr = aes.utils.int2arr8bit(data['hex'], data['len'])
-    except UserWarning: return None
+    intarr = aes.utils.int2arr8bit(data['hex'], data['len'])
     text = ''
     for i in intarr:
         text += chars[i % 95]
@@ -40,9 +37,7 @@ def encrypt(mk, data):
     return tct
 
 def decrypt(mk, tct):
-    try:
-        cipher = aes.aes(tothex(mk)['hex'], 192)
-    except UserWarning: return ''
+    cipher = aes.aes(tothex(mk)['hex'], 192)
     text = ''
     for thex in tct:
         d_thex = {'hex':aes.utils.arr8bit2int(cipher.dec_once(thex['hex'])), 'len':thex['len']}
