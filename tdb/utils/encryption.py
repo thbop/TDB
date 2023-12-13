@@ -1,4 +1,6 @@
 import aes
+import warnings
+warnings.filterwarnings("error")
 
 
 chars = '`~1!2@3#4$5%6^7&8*9(0)-_=+qQwWeErRtTyYuUiIoOpP[{}]\\|aAsSdDfFgGhHjJkKlL;:\'"zZxXcCvVbBnNmM,<.>/? ' # Prevent invalid characters
@@ -13,10 +15,12 @@ def tothex(text: str):
     return {'hex':aes.utils.arr8bit2int(intarr), 'len':len(text)}
 
 def fromthex(data):
-    intarr = aes.utils.int2arr8bit(data['hex'], data['len'])
+    try:
+        intarr = aes.utils.int2arr8bit(data['hex'], data['len'])
+    except UserWarning: return None
     text = ''
     for i in intarr:
-        text += chars[i]
+        text += chars[i % 95]
     return text
 
 def split_text(text, n=16):
@@ -36,11 +40,14 @@ def encrypt(mk, data):
     return tct
 
 def decrypt(mk, tct):
-    cipher = aes.aes(tothex(mk)['hex'], 192)
+    try:
+        cipher = aes.aes(tothex(mk)['hex'], 192)
+    except UserWarning: return ''
     text = ''
     for thex in tct:
         d_thex = {'hex':aes.utils.arr8bit2int(cipher.dec_once(thex['hex'])), 'len':thex['len']}
-        text += fromthex(d_thex)
+        t = fromthex(d_thex)
+        text += t if isinstance(t, str) else ''
     return text
 
 
@@ -52,5 +59,7 @@ if __name__ == '__main__':
     tct = encrypt(key, text)
     print(tct)
 
-    print(decrypt(key, tct))
+
+    print(decrypt('passwordpasswordpassword', tct))
+
     

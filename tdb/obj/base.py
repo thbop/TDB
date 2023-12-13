@@ -5,7 +5,7 @@ from copy import copy
 class BaseObj:
     def __init__(self):
         self.private = {}
-        self._encrypted = True
+        self._encrypted = False
 
         self.public = {}
 
@@ -19,13 +19,18 @@ class BaseObj:
             'public': self.public
         }
 
-    def get_private(self, key, data):
-        if not self._encrypted:
-            self.private = json.loads(decrypt(key, data))
-            self._encrypted = False
+    def get_private(self, key):
+        if self._encrypted:
+            raw_data = decrypt(key, self.private)
+            if raw_data != '':
+                self.private = json.loads(raw_data)
+                self._encrypted = False
+                return True
+            else:
+                return False
 
     def set_private(self, key):
-        if self._encrypted:
+        if not self._encrypted:
             self.private = encrypt(key, json.dumps(self.private))
             self._encrypted = True
     
