@@ -1,5 +1,4 @@
 from ..utils.encryption import encrypt, decrypt
-import json
 from copy import copy
 
 class BaseObj:
@@ -21,21 +20,17 @@ class BaseObj:
 
     def get_private(self, key):
         if self._encrypted:
-            raw_data = decrypt(key, self.private)
-            try:
-                self.private = json.loads(raw_data)
-
+            dec = decrypt(key, self.private)
+            if dec != None:
+                self.private = dec
                 self._encrypted = False
                 return True
-            
-            except json.decoder.JSONDecodeError:
+            else:
                 return False
             
-
-
     def set_private(self, key):
         if not self._encrypted:
-            self.private = encrypt(key, json.dumps(self.private))
+            self.private = encrypt(key, self.private)
             self._encrypted = True
     
     def copy(self):

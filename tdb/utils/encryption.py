@@ -1,60 +1,62 @@
-import aes
+import json
+from base64 import urlsafe_b64encode as b64e
 
+from cryptography.fernet import Fernet
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
+from cryptography.fernet import InvalidToken
 
-chars = '`~1!2@3#4$5%6^7&8*9(0)-_=+qQwWeErRtTyYuUiIoOpP[{}]\\|aAsSdDfFgGhHjJkKlL;:\'"zZxXcCvVbBnNmM,<.>/? ' # Prevent invalid characters
+# https://stackoverflow.com/questions/2490334/simple-way-to-encode-a-string-according-to-a-password
+# https://bard.google.com
 
-def tothex(text: str):
-    intarr = []
-    for c in text:
-        loc = chars.find(c)
-        if loc == -1:
-            return False
-        intarr.append(loc)
-    return {'hex':aes.utils.arr8bit2int(intarr), 'len':len(text)}
+def _derive_key(key: str) -> bytes:
+    """Derive a secret key from a given password"""
+    print(key)
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(), length=32, salt=b'Saucy salt that is consistent',
+        iterations=100_000, backend=default_backend())
+    return b64e(kdf.derive(key.encode()))
 
-def fromthex(data):
-    intarr = aes.utils.int2arr8bit(data['hex'], data['len'])
-    text = ''
-    for i in intarr:
-        text += chars[i % 95]
-    return text
+def encrypt(key, data):
+    fernet = Fernet(_derive_key(key))
+    data = fernet.encrypt(json.dumps(data).encode())
+    return json.dumps(data.decode())
 
-def split_text(text, n=16):
-    '''
-    Splits the text every nth character
-    source: https://stackoverflow.com/questions/9475241/split-string-every-nth-character
-    '''
-    return [text[i:i+n] for i in range(0, len(text), n)]
-
-def encrypt(mk, data):
-    cipher = aes.aes(tothex(mk)['hex'], 192)
-    tct = []
-    for t in split_text(data):
-        thex = tothex(t)
-        if not thex: return False # Pass on the invalid character error
-        tct.append({'hex':aes.utils.arr8bit2int(cipher.enc_once(thex['hex'])), 'len':thex['len']})
-    return tct
-
-def decrypt(mk, tct):
-    cipher = aes.aes(tothex(mk)['hex'], 192)
-    text = ''
-    for thex in tct:
-        d_thex = {'hex':aes.utils.arr8bit2int(cipher.dec_once(thex['hex'])), 'len':thex['len']}
-        t = fromthex(d_thex)
-        text += t if isinstance(t, str) else ''
-    return text
-
-
+def decrypt(key, data):
+    fernet = Fernet(_derive_key(key))
+    data = json.loads(data).encode()
+    try:
+        return json.loads(fernet.decrypt(data).decode())
+    except InvalidToken:
+        return None
 
 if __name__ == '__main__':
-    key = 'passwordpasswordpassword'
-    
-    text = 'Hi Roger boy, how are you?'
-    tct = encrypt(key, text)
-    print(tct)
+
+    data = {'jo':'bar'}
+    password = 'mypass'
+    key = _derive_key(password)
+    enc = encrypt(key, data)
+
+    print(enc, decrypt(key, enc))
+
+    # password = 'mypass'
+
+    # # key = Fernet.generate_key()
+    # fernet = Fernet(_derive_key(password.encode()))
+    # fernet2 = Fernet(_derive_key('mypass'.encode()))
 
 
-    print(decrypt('passwordpasswordpassword', tct))
+    # message = "This is a secret message!"
+    # encrypted_message = fernet.encrypt(message.encode())
 
-    
+    # try:
+    #     decrypted_message = fernet2.decrypt(encrypted_message).decode()
+    # except InvalidToken:
+    #     decrypted_message = None
+
+    # print(f"Original message: {message}")
+    # print(f"Encrypted message: {encrypted_message}")
+    # print(f"Decrypted message: {decrypted_message}")
+

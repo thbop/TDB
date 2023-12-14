@@ -48,5 +48,14 @@ class BaseHandler:
         else:
             raise TypeError(f'{self.key} is a list. Use set() for dictionaries.')
         
-    # def remove(self, )
+    def delete(self, key):
+        if isinstance(self.objects, dict):
+            del self.objects[key]
+        else:
+            raise TypeError(f'{self.key} is a dictionary. Use remove() for lists.')
+    def remove(self, obj):
+        if isinstance(self.objects, list):
+            self.objects.remove(obj)
+        else:
+            raise TypeError(f'{self.key} is a list. Use delete() for dictionaries.')
     
